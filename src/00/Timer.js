@@ -1,14 +1,15 @@
-import * as React from 'react';
-import { useReducer } from 'react';
-import { faPlay, faPause } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ProgressCircle } from '../ProgressCircle';
+import * as React from "react";
+import { useReducer } from "react";
+import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ProgressCircle } from "../ProgressCircle";
+import { timerReducer, timerMachine } from "./timerMachine";
 
 // Import the timer machine and its initial state:
 // import { ... } from './timerMachine';
 
 export const Timer = () => {
-  const state = ''; // delete me - useReducer instead!
+  const [status, dispatch] = useReducer(timerReducer, timerMachine.initial);
 
   const { duration, elapsed, interval } = {
     duration: 60,
@@ -19,12 +20,12 @@ export const Timer = () => {
   return (
     <div
       className="timer"
-      data-state={state}
+      data-state={status}
       style={{
         // @ts-ignore
-        '--duration': duration,
-        '--elapsed': elapsed,
-        '--interval': interval,
+        "--duration": duration,
+        "--elapsed": elapsed,
+        "--interval": interval,
       }}
     >
       <header>
@@ -32,11 +33,12 @@ export const Timer = () => {
       </header>
       <ProgressCircle />
       <div className="display">
-        <div className="label">{state}</div>
+        <div className="label">{status}</div>
         <div
           className="elapsed"
           onClick={() => {
             // ...
+            dispatch({ type: "TOGGLE" });
           }}
         >
           {Math.ceil(duration - elapsed)}
@@ -44,7 +46,8 @@ export const Timer = () => {
         <div className="controls">
           <button
             onClick={() => {
-              // ...
+              // ...event = RESET
+              dispatch({ type: "RESET" });
             }}
           >
             Reset
@@ -52,23 +55,28 @@ export const Timer = () => {
         </div>
       </div>
       <div className="actions">
-        <button
-          onClick={() => {
-            // ...
-          }}
-          title="Pause timer"
-        >
-          <FontAwesomeIcon icon={faPause} />
-        </button>
-
-        <button
-          onClick={() => {
-            // ...
-          }}
-          title="Start timer"
-        >
-          <FontAwesomeIcon icon={faPlay} />
-        </button>
+        {/* I need to hide the start timer when in the play state */}
+        {status === "running" ? (
+          <button
+            onClick={() => {
+              // ...event = TOGGLE
+              dispatch({ type: "TOGGLE" });
+            }}
+            title="Pause timer"
+          >
+            <FontAwesomeIcon icon={faPause} />
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              // ...event = TOGGLE
+              dispatch({ type: "TOGGLE" });
+            }}
+            title="Start timer"
+          >
+            <FontAwesomeIcon icon={faPlay} />
+          </button>
+        )}
       </div>
     </div>
   );

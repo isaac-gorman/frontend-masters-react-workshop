@@ -1,14 +1,20 @@
-import * as React from 'react';
-import { faPlay, faPause } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as React from "react";
+import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ProgressCircle } from "../ProgressCircle";
+import { timerMachine } from "./timerMachine";
+import { useMachine } from "@xstate/react";
+import { inspect } from "@xstate/inspect";
 
-import { ProgressCircle } from '../ProgressCircle';
-
-// import { useMachine } from '@xstate/react';
-import { timerMachine } from './timerMachine';
+inspect({
+  iframe: false,
+});
 
 export const Timer = () => {
-  const [state, send] = [{}, () => {}];
+  const [state, send] = useMachine(timerMachine, {
+    devTools: true,
+  });
+  const status = state.value; // finite state values "idle", "running", "inactive"
 
   const { duration, elapsed, interval } = {
     duration: 60,
@@ -19,56 +25,57 @@ export const Timer = () => {
   return (
     <div
       className="timer"
-      data-state={state.value} // Hint!
+      data-state={status}
       style={{
         // @ts-ignore
-        '--duration': duration,
-        '--elapsed': elapsed,
-        '--interval': interval,
+        "--duration": duration,
+        "--elapsed": elapsed,
+        "--interval": interval,
       }}
     >
       <header>
-        <h1>Exercise 01</h1>
+        <h1>Exercise 00</h1>
       </header>
       <ProgressCircle />
       <div className="display">
-        <div className="label">{state.value}</div>
+        <div className="label">{status}</div>
         <div
           className="elapsed"
           onClick={() => {
             // ...
+            send({ type: "TOGGLE" });
           }}
         >
           {Math.ceil(duration - elapsed)}
         </div>
         <div className="controls">
-          {state === 'paused' && (
-            <button
-              onClick={() => {
-                // ...
-              }}
-            >
-              Reset
-            </button>
-          )}
+          <button
+            onClick={() => {
+              // ...event = RESET
+              send({ type: "RESET" });
+            }}
+          >
+            Reset
+          </button>
         </div>
       </div>
       <div className="actions">
-        {state === 'running' && (
+        {/* I need to hide the start timer when in the play state */}
+        {status === "running" ? (
           <button
             onClick={() => {
-              // ...
+              // ...event = TOGGLE
+              send({ type: "TOGGLE" });
             }}
             title="Pause timer"
           >
             <FontAwesomeIcon icon={faPause} />
           </button>
-        )}
-
-        {(state === 'paused' || state === 'idle') && (
+        ) : (
           <button
             onClick={() => {
-              // ...
+              // ...event = TOGGLE
+              send({ type: "TOGGLE" });
             }}
             title="Start timer"
           >
